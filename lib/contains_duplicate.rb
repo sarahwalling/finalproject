@@ -19,7 +19,7 @@
 # 1 <= nums.length <= 105
 # -109 <= nums[i] <= 109
 
-class ContainsDuplicates
+class ContainsDuplicate
 	# @param {Integer[]} nums
 	# @return {Boolean}
 	def contains_duplicate(nums)
