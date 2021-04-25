@@ -31,6 +31,6 @@ jobs:
               --format progress \
               --format RspecJunitFormatter \
               --out /tmp/tests-rspec-results/rspec.xml \
-              spec/**/*_spec.rb
+              spec/*
       - store_test_results:
           path: /tmp/tests-rspec-results
