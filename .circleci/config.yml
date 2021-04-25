@@ -10,6 +10,30 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Which bundler?
-          command: bundle -v
-      - ruby/bundle-install
+          name: LS & PWD
+          command: |
+            ls -a
+            pwd
+      - run:
+          name: Install Bundler & Which Bundler?
+          command: |
+            gem install bundler -v 2.2.16
+            bundle -v
+      - run:
+          name: Install from Gemfile
+          command: bundle install
+      - run:
+          name: Run unit tests using RSpec
+          command: >
+            mkdir -p /tmp/tests-rspec-results
+
+            TEST_FILES="$(circleci tests glob "spec/**/*_spec.rb" | circleci tests
+            split --split-by=timings)"
+
+            bundle exec rspec \
+              --format progress \
+              --format RspecJunitFormatter \
+              --out /tmp/tests-rspec-results/rspec.xml \
+              $TEST_FILES
+      - store_test_results:
+          path: /tmp/tests-rspec-results
