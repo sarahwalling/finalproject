@@ -19,16 +19,16 @@ parameters:
     type: boolean
     default: false
   reverse_integer:
-      type: boolean
-      default: false
+    type: boolean
+    default: false
 
 orbs:
   ruby: circleci/ruby@0.1.2 
 
 jobs:
   trigger-tests:
-    context:
-      - test-run
+    # context:
+    #   - test-run
     docker:
       - image: circleci/ruby:2.6.3-stretch-node
     steps:
@@ -94,52 +94,47 @@ workflows:
     jobs:
       - build:
           name: build-contains-duplicate
-          problem_name: contains_duplicate
       - run-test:
           name: run-test-contains-duplicate
           problem_name: contains_duplicate
-          requires: build-contains-duplicate
+          requires: [build-contains-duplicate]
   
   count_primes:
     when: << pipeline.parameters.count_primes >>
     jobs:
       - build:
           name: build-count-primes
-          problem_name: count_primes
       - run-test:
           name: run-test-count-primes
           problem_name: count_primes
-          requires: build-count-primes
+          requires: [build-count-primes]
   
   distribute_candies:
     when: << pipeline.parameters.distribute_candies >>
     jobs:
       - build:
           name: build-distribute-candies
-          problem_name: distribute_candies
       - run-test:
           name: run-test-distribute-candies
           problem_name: distribute_candies
-          requires: build-distribute-candies
+          requires: [build-distribute-candies]
   
   longest_common_prefix:
     when: << pipeline.parameters.longest_common_prefix >>
     jobs:
       - build:
           name: build-longest-common-prefix
-          problem_name: longest_common_prefix
       - run-test:
           name: run-test-longest-common-prefix
           problem_name: longest_common_prefix
-          requires: build-longest-common-prefix
+          requires: [build-longest-common-prefix]
   
   reverse_integer:
     when: << pipeline.parameters.reverse_integer >>
     jobs:
       - build:
           name: build-reverse-integer
-          problem_name: reverse_integer
       - run-test:
           name: run-test-reverse-integer
           problem_name: reverse_integer
-          requires: build-reverse-integer
+          requires: [build-reverse-integer]
