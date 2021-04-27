@@ -1,11 +1,48 @@
 version: 2.1
+parameters:
+  # This parameter is used to trigger the main build workflow
+  trigger:
+    type: boolean
+    default: true
+
+  # A parameter per problem
+  contains_duplicate:
+    type: boolean
+    default: false
+  count_primes:
+    type: boolean
+    default: false
+  distribute_candies:
+    type: boolean
+    default: false
+  longest_common_prefix:
+    type: boolean
+    default: false
+  reverse_integer:
+      type: boolean
+      default: false
+
 orbs:
   ruby: circleci/ruby@0.1.2 
 
 jobs:
-  build:
+  trigger-tests:
+    context:
+      - test-run
     docker:
       - image: circleci/ruby:2.6.3-stretch-node
+    steps:
+      - checkout
+      - run:
+          name: Can find CIRCLE_CI_TOKEN token?
+          command: if [ -z "$CIRCLE_CI_TOKEN" ]; then echo "CIRCLE_CI_TOKEN is blank or empty string."; else echo "CIRCLE_CI_TOKEN is set to '$CIRCLE_CI_TOKEN'"; fi
+      - run:
+          name: Trigger tests
+          command: chmod +x .circleci/simple_find_files.sh && .circleci/simple_find_files.sh
+
+  build:
+    # docker:
+    #   - image: circleci/ruby:2.6.3-stretch-node
     executor: ruby/default
     steps:
       - checkout
@@ -22,6 +59,13 @@ jobs:
       - run:
           name: Install from Gemfile
           command: bundle install
+
+  run-test:
+    parameters:
+      problem_name:
+        type: string
+    executor: ruby/default
+    steps:
       - run:
           name: Run unit tests using RSpec
           command: >
@@ -31,6 +75,71 @@ jobs:
               --format progress \
               --format RspecJunitFormatter \
               --out /tmp/tests-rspec-results/rspec.xml \
-              spec/*
+              spec/<< parameters.problem_name >>_spec.rb
       - store_test_results:
           path: /tmp/tests-rspec-results
+
+workflows:
+  version: 2
+
+  # The workflow responsible for triggering another workflow where file changes are detected.
+  ci:
+    when: << pipeline.parameters.trigger >>
+    jobs:
+      - trigger-tests
+
+  # Workflows defined for each problem
+  contains_duplicate:
+    when: << pipeline.parameters.contains_duplicate >>
+    jobs:
+      - build:
+          name: build-contains-duplicate
+          problem_name: contains_duplicate
+      - run-test:
+          name: run-test-contains-duplicate
+          problem_name: contains_duplicate
+          requires: build-contains-duplicate
+  
+  count_primes:
+    when: << pipeline.parameters.count_primes >>
+    jobs:
+      - build:
+          name: build-count-primes
+          problem_name: count_primes
+      - run-test:
+          name: run-test-count-primes
+          problem_name: count_primes
+          requires: build-count-primes
+  
+  distribute_candies:
+    when: << pipeline.parameters.distribute_candies >>
+    jobs:
+      - build:
+          name: build-distribute-candies
+          problem_name: distribute_candies
+      - run-test:
+          name: run-test-distribute-candies
+          problem_name: distribute_candies
+          requires: build-distribute-candies
+  
+  longest_common_prefix:
+    when: << pipeline.parameters.longest_common_prefix >>
+    jobs:
+      - build:
+          name: build-longest-common-prefix
+          problem_name: longest_common_prefix
+      - run-test:
+          name: run-test-longest-common-prefix
+          problem_name: longest_common_prefix
+          requires: build-longest-common-prefix
+  
+  reverse_integer:
+    when: << pipeline.parameters.reverse_integer >>
+    jobs:
+      - build:
+          name: build-reverse-integer
+          problem_name: reverse_integer
+      - run-test:
+          name: run-test-reverse-integer
+          problem_name: reverse_integer
+          requires: build-reverse-integer
